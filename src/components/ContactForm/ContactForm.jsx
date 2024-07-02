@@ -1,45 +1,27 @@
-import { Component } from "react";
+import React, { useState } from "react";
 import { nanoid } from 'nanoid';
 import css from './ContactForm.module.css';
 import PropTypes from 'prop-types';
+import { Notify } from "notiflix";
 
-export class ContactForm extends Component {
-    static propTypes = {
-        addContact: PropTypes.func.isRequired,
-        contacts: PropTypes.arrayOf(
-            PropTypes.shape({
-                id: PropTypes.string.isRequired,
-                name: PropTypes.string.isRequired,
-                number: PropTypes.string.isRequired
+export const ContactForm = ({ addContact, contacts }) => {
+    const [number, setNumber] = useState('');
+    const [name, setName] = useState('');
+  
+    
+    const handleNameChange = e => {
+        setName(e.target.value);
+        };
+    
 
-            })
-        ),
-    };
+    const handleNumberChange = e => {
+        setNumber(e.target.value); 
+        };
 
-    state = {
-        name: '',
-        number: '',
-        
-    };
 
-    handleNameChange = e => {
-        this.setState({
-            name: e.target.value,
-        });
-    };
-
-    handleNumberChange = e => {
-        this.setState({
-            number: e.target.value,
-        });
-    };
-
-    handleSubmit = e => {
+    const handleSubmit = e => {
         // prevent the form refreshing when submitting
         e.preventDefault();
-        const { name, number } = this.state;
-        const { addContact, contacts } = this.props;
-
         // if name and number is empty, it will not submit(return)
         if (name.trim() === '' || number.trim() === '') {
             return;
@@ -49,8 +31,14 @@ export class ContactForm extends Component {
             contact => contact.name.toLowerCase() === name.toLowerCase()
         );
         if (existingContact) {
-            alert(`${name} is already in contacts!`);
+            Notify.failure(`${name} is already in contacts!`, {
+                position: 'center-top',
+            });
             return;
+        } else {
+            Notify.success(`${name} is successfully added to your contacts!`, {
+                position: 'center-top',
+            });
         }
         // Add Contact
         addContact({
@@ -59,17 +47,14 @@ export class ContactForm extends Component {
             number: number.trim(),
         });
         // Reset Form Fields upon submitting
-        this.setState({
-            name: '',
-            number: '',
-        });
+        
+        setName('');
+        setNumber('');
     };
-
-    render() {
-        const { name, number } = this.state;
+    
 
         return (
-            <form className={css.form} onSubmit={this.handleSubmit}>
+            <form className={css.form} onSubmit={handleSubmit}>
                 <label className={css.formField}>
                     <p className={css.formLabel}>Name</p>
                     <input
@@ -80,7 +65,7 @@ export class ContactForm extends Component {
                         title="Name may contain only letters, apostrophe, dash and spaces. For example Adrian, Jacob Mercer, Charles de Batz de Castelmore d'Artagnan."
                         required
                         value={name}
-                        onChange={this.handleNameChange}
+                        onChange={handleNameChange}
                     />
                 </label>
                 
@@ -94,7 +79,7 @@ export class ContactForm extends Component {
                         title="Phone number must be digits and can contain spaces, dashes, parentheses and can start with +"
                         required
                         value={number}
-                        onChange={this.handleNumberChange}
+                        onChange={handleNumberChange}
                     />
                 </label>
                 <button className={css.formButton} type="submit">
@@ -102,5 +87,17 @@ export class ContactForm extends Component {
                 </button>
             </form>
         );
-    }
-}
+    };
+
+
+ContactForm.propTypes = {
+    addContact: PropTypes.func.isRequired,
+        contacts: PropTypes.arrayOf(
+            PropTypes.shape({
+                id: PropTypes.string.isRequired,
+                name: PropTypes.string.isRequired,
+                number: PropTypes.string.isRequired
+
+            })
+        ),
+    };
